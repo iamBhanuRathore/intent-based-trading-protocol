@@ -1,0 +1,95 @@
+🧠 Core Idea
+Users express intents (high-level trading goals), like:
+
+"Swap 100 SOL to stSOL with best APY"
+
+"Move idle USDC to the highest-yielding farm"
+
+"Sell 50% of my NFTs and stake the rest"
+
+Instead of manually executing each step, users submit an intent, and solvers (bots) compete to fulfill it optimally. Think of it as request-for-quote (RFQ) meets automation.
+
+🏗️ Architecture Overview
+1. User submits an intent
+Via UI or CLI
+
+Signed and posted on-chain or off-chain (depending on architecture)
+
+Intent schema: input token(s), amount, goal (e.g. “maximize APY”, “minimize slippage”), constraints
+
+2. Solvers/Executors monitor intents
+Watch intent pool (on-chain or through a PubSub model)
+
+Calculate the best path to fulfill the intent (e.g., Jupiter for swaps, Orca for LP, MarginFi for lending)
+
+Simulate route and submit execution back on-chain
+
+3. Protocol validates execution
+Smart contract verifies output meets or exceeds the user's constraints
+
+Rewards the solver if valid (fee, rebate, or bounty)
+
+⚙️ MVP Scope for Hackathon
+Smart Contracts (Anchor)
+Intent struct
+
+Submit + cancel intent
+
+Execute intent (with checks + incentives)
+
+Optional: escrow funds in a vault
+
+Solvers (off-chain bots)
+Node.js or Rust bot
+
+Uses APIs (Jupiter Aggregator, Orca, Solend)
+
+Monitors open intents and submits fulfillments
+
+Frontend (React + Solana Wallet Adapter)
+Form to create intents
+
+View open intents + execution status
+
+Show history + stats
+
+🌐 Composability
+You can plug into:
+
+Jupiter: Aggregated swaps
+
+Orca, Raydium: LP opportunities
+
+Drift, Mango: Leverage or futures
+
+Marinade, Lido: Staking destinations
+
+Eventually, allow custom solvers—anyone can write bots and earn from fulfilling intents better than others.
+
+🧩 Why It’s a Big Deal
+User simplicity: No need to know DeFi mechanics
+
+Execution efficiency: Solvers compete → better pricing, yield
+
+Scalability: Composable across the Solana DeFi stack
+
+Capital efficiency: Intent routing can unlock more value per transaction
+
+🔥 Optional Extensions (Post-MVP)
+Intent NFTs: Let intents be tokenized + tradable
+
+Private intents: Use ZK or off-chain intent relay
+
+Intent bundling: Combine multiple intents into one mega transaction
+
+MEV-capture: Build Jito-aware solvers to extract and share value
+
+Let me know if you want:
+
+Intent schema examples
+
+Anchor program boilerplate
+
+A basic solver bot template
+
+UX mockup ideas for the frontend

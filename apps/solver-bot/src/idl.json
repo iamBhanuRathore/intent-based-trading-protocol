@@ -1,6 +1,7 @@
-export const IDL ={
+{
     "version": "0.1.0",
     "name": "intent_protocol",
+    "address": "5Qa4VpVYpZecUsBVZWyeyDb9QfoFqS1UuogihHv2wmVi",
     "instructions": [
         {
             "name": "submitIntent",
@@ -409,6 +410,3 @@ export const IDL ={
         }
     ]
 }
-
-
-export const IDL_JSON = JSON.stringify(IDL, null, 2);

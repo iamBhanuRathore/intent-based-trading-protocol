@@ -122,62 +122,75 @@
   .glass-card {
     @apply bg-secondary/30 backdrop-blur-sm border border-white/10 shadow-md;
   }
-  
+
   .nav-item {
     @apply px-4 py-2 text-sm font-medium rounded-md transition-colors;
   }
-  
+
   .nav-item-active {
     @apply bg-secondary text-white;
   }
-  
+
   .nav-item-inactive {
     @apply text-zinc-400 hover:text-white hover:bg-secondary/50;
   }
-  
+
   .token-input {
     @apply w-full bg-transparent border-none text-4xl font-medium outline-none placeholder:text-muted-foreground;
   }
-  
+
   .swap-tab {
     @apply px-4 py-2 text-sm font-medium rounded-md transition-colors;
   }
-  
+
   .swap-tab-active {
     @apply bg-secondary text-white;
   }
-  
+
   .swap-tab-inactive {
     @apply text-zinc-400 hover:text-white hover:bg-secondary/50;
   }
 }
-
-
 
 @layer utilities {
   .animate-in {
     animation-delay: 0ms;
     animation-fill-mode: both;
   }
-  
+
   .animate-out {
     animation-delay: 0ms;
     animation-fill-mode: both;
   }
-  
+
   .fade-in {
     animation: fade-in 0.3s ease-out;
   }
-  
+
   .fade-out {
     animation: fade-out 0.3s ease-out;
   }
-  
+
   .slide-in {
     animation: slide-in 0.3s ease-out;
   }
-  
+
   .slide-down {
     animation: slide-down 0.3s ease-out;
   }
+}
+
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
+.dialog-content {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 51;
 }

@@ -1,63 +1,72 @@
+// src/components/token-select-modal.tsx (adjust path as necessary)
+'use client'; // Keep this if it's a client component
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@repo/ui/components/ui/command';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@repo/ui/components/ui/dialog';
 import { X } from 'lucide-react';
 import { Button } from '@repo/ui/components/ui/button';
-
+// Use the same Token interface as SwapInterface
+// If Token is defined in a shared location, import it instead.
+// Otherwise, define it consistently here.
 export interface Token {
   symbol: string;
   name: string;
   logo: string;
+  mintAddress: string; // Crucial for comparison/filtering
+  decimals: number;    // Keep consistent if needed elsewhere, though not strictly used in this modal display
 }
 
 interface TokenSelectModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelect: (token: Token) => void;
+  tokens: Token[]; // Accept the list of tokens from parent
+  currentToken?: Token | null; // Accept the token currently selected in the *other* field (optional)
 }
 
-const TokenSelectModal: React.FC<TokenSelectModalProps> = ({ 
-  isOpen, 
+const TokenSelectModal: React.FC<TokenSelectModalProps> = ({
+  isOpen,
   onClose,
-  onSelect
+  onSelect,
+  tokens,
+  currentToken,
 }) => {
-  // Mock token data - in a real app, this would come from an API or state
-  const tokens: Token[] = [
-    { symbol: 'ETH', name: 'Ethereum', logo: '/placeholder.svg' },
-    { symbol: 'BTC', name: 'Bitcoin', logo: '/placeholder.svg' },
-    { symbol: 'USDT', name: 'Tether', logo: '/placeholder.svg' },
-    { symbol: 'USDC', name: 'USD Coin', logo: '/placeholder.svg' },
-    { symbol: 'DAI', name: 'Dai', logo: '/placeholder.svg' },
-    { symbol: 'FLOW', name: 'Flow', logo: '/placeholder.svg' },
-  ];
-  
+  console.log('TokenSelectModal props:', { isOpen, tokens, currentToken });
+  // Memoize the filtered list to avoid recalculation on every render
+  const filteredTokens = useMemo(() => {
+    if (!currentToken) {
+      return tokens; // If no token is currently selected in the other slot, show all
+    }
+    // Filter out the token that is already selected in the other input field
+    return tokens.filter(token => token.mintAddress !== currentToken.mintAddress);
+  }, [tokens, currentToken]); // Dependencies for the memoization
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-card/80 backdrop-blur-xl border border-secondary p-0">
-        <DialogHeader className="px-4 pt-4 flex justify-between flex-row items-center">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-full max-w-md bg-card/80 backdrop-blur-xl border border-secondary p-0 overflow-hidden">
+        <DialogHeader className="px-4 py-4 flex justify-between flex-row items-center border-b border-secondary">
           <DialogTitle>Select a token</DialogTitle>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
-            <X className="h-4 w-4" />
-          </Button>
         </DialogHeader>
-        
-        <Command className="bg-transparent">
-          <CommandInput placeholder="Search token name or paste address" className="border-b border-secondary h-14" />
-          <CommandList className="max-h-[300px] p-2">
+
+        <Command className="rounded-lg border-none">
+          <CommandInput placeholder="Search token name or paste address" className="h-12 border-none focus:ring-0" />
+          <CommandList className="max-h-[400px] p-2">
             <CommandEmpty>No tokens found.</CommandEmpty>
             <CommandGroup>
-              {tokens.map((token) => (
+              {filteredTokens.map((token) => (
                 <CommandItem
-                  key={token.symbol}
-                  onSelect={() => {
-                    onSelect(token);
-                    onClose();
-                  }}
-                  className="py-3 px-2 rounded-lg hover:bg-secondary flex items-center cursor-pointer"
+                  key={token.mintAddress}
+                  value={`${token.symbol} ${token.name} ${token.mintAddress}`}
+                  onSelect={() => onSelect(token)}
+                  className="py-3 px-2 rounded-lg hover:bg-secondary/50 flex items-center cursor-pointer"
                 >
-                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center mr-3">
-                    <img src={token.logo} alt={token.name} className="h-full w-full object-cover" />
+                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-600 flex items-center justify-center mr-3 shrink-0">
+                    <img
+                      src={token.logo}
+                      alt={token.name}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="flex flex-col items-start">
                     <span className="font-medium">{token.symbol}</span>

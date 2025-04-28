@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState } from "react";
 import { Search, Menu } from "lucide-react";
@@ -5,12 +6,16 @@ import Logo from "./logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@repo/ui/components/ui/button";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import ClientOnly from "./client-only";
+
 interface HeaderProps {
   className?: string;
-}
+};
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
   const [activeTab, setActiveTab] = useState("trade");
+
+
 
   return (
     <header
@@ -63,7 +68,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           />
           <span className="absolute right-3 text-zinc-400 text-xs">/</span>
         </div>
-        {typeof window !== "undefined" && <WalletMultiButton />}
+        {/* <ClientOnly> */}
+        <div suppressHydrationWarning={true}>
+          <WalletMultiButton />
+        </div>
+        {/* </ClientOnly> */}
         <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-5 w-5" />
         </Button>
@@ -73,4 +82,3 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
 };
 
 export default Header;
-
