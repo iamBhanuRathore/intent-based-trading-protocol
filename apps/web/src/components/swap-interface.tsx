@@ -3,24 +3,12 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { ArrowDown, Settings, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@repo/ui/components/ui/button';
-// Remove IDL import from common if using local idl.json
-// import { IDL } from '@repo/common/index';
 import TokenDisplay from './token-display';
 import TokenSelectModal from './token-select-modal'; // Assuming this component accepts a 'tokens' prop now
 // -----------------------
-import { useAnchorWallet, useConnection } from "@solana/wallet-adapter-react";
-import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
-import { Program, AnchorProvider, BN, Idl } from "@project-serum/anchor";
-import {
-  TOKEN_PROGRAM_ID,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddressSync, // Use sync version for predictability within function
-  createAssociatedTokenAccountInstruction,
-  createApproveInstruction,
-  getAccount, // To check if ATA exists
-  // getAssociatedTokenAddress // Keep async if preferred outside main handler
-} from "@solana/spl-token";
-import idl from "@/lib/idl.json"; // Using local IDL
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
+import { Connection, PublicKey } from "@solana/web3.js";
+import { AnchorProvider } from "@project-serum/anchor";
 import { getJupiterQuote } from '@/lib/submitIntent';
 // -----------------------
 
@@ -74,22 +62,6 @@ const SOLANA_TOKENS: Token[] = [
 ];
 
 
-const PROGRAM_ID = new PublicKey(idl.address); // Get Program ID from IDL metadata
-
-const getIntentPDA = async (intentId: BN, user: PublicKey, programId: PublicKey): Promise<[PublicKey, number]> => {
-  // Ensure intentId is treated as u64 (8 bytes) little-endian
-  const intentIdBuffer = intentId.toArrayLike(Buffer, 'le', 8);
-
-  return PublicKey.findProgramAddressSync(
-    [
-      Buffer.from('intent'),
-      user.toBuffer(),
-      intentIdBuffer,
-    ],
-    programId // Pass programId here
-  );
-};
-
 interface SwapInterfaceProps {
   className?: string;
 }
@@ -101,7 +73,7 @@ const SwapInterface: React.FC<SwapInterfaceProps> = ({ className }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const connection = new Connection("https://solana-mainnet.g.alchemy.com/v2/W62oNPCL2C6RdW_irgCclAQu_QTllslz");
+  const connection = new Connection(process.env.RPC_URL!);
   const wallet = useAnchorWallet();
   const publicKey = wallet?.publicKey;
 
@@ -150,17 +122,11 @@ const SwapInterface: React.FC<SwapInterfaceProps> = ({ className }) => {
     return new AnchorProvider(connection, wallet, AnchorProvider.defaultOptions());
   }, [connection, wallet]);
 
-  // Memoize the program instance
-  const program = useMemo(() => {
-    if (!provider) return null;
-    // Ensure the IDL structure matches what Anchor expects
-    return new Program(idl as Idl, PROGRAM_ID, provider);
-  }, [provider]);
 
   const handleSubmitIntent = useCallback(async () => {
-    if (!publicKey || !wallet || !program || !provider || !wallet.signTransaction) { // Add signTransaction check
+    if (!publicKey || !wallet || !provider || !wallet.signTransaction) { // Add signTransaction check
       setError("Wallet not connected, program not initialized, or wallet cannot sign.");
-      console.error("Pre-check failed:", { publicKey, wallet, program, provider });
+      console.error("Pre-check failed:", { publicKey, wallet, provider });
       return;
     }
     if (!fromToken || !toToken) {
@@ -186,142 +152,7 @@ const SwapInterface: React.FC<SwapInterfaceProps> = ({ className }) => {
     } finally {
       setIsLoading(false);
     }
-
-    // try {
-    //   const intentId = new BN(Math.floor(Date.now() / 1000) + Math.floor(Math.random() * 1000)); // More unique ID
-    //   const [intentPda, intentBump] = await getIntentPDA(intentId, publicKey, program.programId);
-
-    //   const inputMint = new PublicKey(fromToken.mintAddress);
-    //   const outputMint = new PublicKey(toToken.mintAddress);
-    //   // TODO: Add this back in
-    //   const inputAmountLamports = new BN(sellAmountFloat * Math.pow(10, fromToken.decimals));
-    //   // TODO: Remove this -- POOR Bro really less money
-    //   // const inputAmountLamports = new BN(sellAmountFloat); // currently getting money in [lamports] - decimals not needed
-    //   const expiryTs = new BN(Math.floor(Date.now() / 1000) + 3600);
-    //   const category = new BN(1);
-
-    //   // --- NEW: Prepare Delegation ---
-    //   const transaction = new Transaction();
-    //   const instructions: TransactionInstruction[] = [];
-
-    //   // 1. Calculate PDAs and ATAs
-    //   const [intentAuthorityPDA] = PublicKey.findProgramAddressSync(
-    //     [Buffer.from('intent_authority')],
-    //     program.programId
-    //   );
-
-    //   // User's Input ATA
-    //   const userInputTokenAccount = getAssociatedTokenAddressSync(
-    //     inputMint,
-    //     publicKey
-    //   );
-    //   console.log(`User Input ATA: ${userInputTokenAccount.toBase58()}`);
-
-    //   // 2. Check if User Input ATA exists and add create instruction if needed
-    //   try {
-    //     await getAccount(provider.connection, userInputTokenAccount);
-    //     console.log("User input ATA already exists.");
-    //   } catch (error: any) {
-    //     // Handle case where account doesn't exist (TokenAccountNotFoundError expected)
-    //     if (error.name === 'TokenAccountNotFoundError' || error.message.includes("could not find account")) {
-    //       console.log("User input ATA not found. Adding create instruction...");
-    //       instructions.push(
-    //         createAssociatedTokenAccountInstruction(
-    //           publicKey, // Payer
-    //           userInputTokenAccount, // ATA address
-    //           publicKey, // Owner
-    //           inputMint // Mint
-    //           // TOKEN_PROGRAM_ID, // Default
-    //           // ASSOCIATED_TOKEN_PROGRAM_ID // Default
-    //         )
-    //       );
-    //     } else {
-    //       // Other error fetching account
-    //       throw error;
-    //     }
-    //   }
-
-
-    //   // 3. Add Approve Instruction
-    //   console.log(`Approving ${intentAuthorityPDA.toBase58()} to spend ${inputAmountLamports.toString()} from ${userInputTokenAccount.toBase58()}`);
-    //   instructions.push(
-    //     createApproveInstruction(
-    //       userInputTokenAccount, // User's source account
-    //       intentAuthorityPDA,    // Delegate PDA
-    //       publicKey,             // Owner of the source account (the user)
-    //       BigInt(inputAmountLamports.toString()), // Amount (use BigInt for approve)
-    //       [],                    // Multi-signers (usually empty)
-    //       TOKEN_PROGRAM_ID       // SPL Token program ID
-    //     )
-    //   );
-
-    //   // 4. Add Submit Intent Instruction
-    //   console.log("Adding submitIntent instruction...");
-    //   instructions.push(
-    //     await program.methods
-    //       .submitIntent(
-    //         intentId,
-    //         inputMint,
-    //         outputMint,
-    //         inputAmountLamports,
-    //         expiryTs,
-    //         category
-    //       )
-    //       .accounts({
-    //         intent: intentPda,
-    //         user: publicKey,
-    //         systemProgram: SystemProgram.programId,
-    //       })
-    //       .instruction() // Get the instruction object
-    //   );
-
-    //   // 5. Build and Send Transaction
-    //   transaction.add(...instructions);
-    //   transaction.recentBlockhash = (await provider.connection.getLatestBlockhash()).blockhash;
-    //   transaction.feePayer = publicKey;
-
-    //   console.log("Requesting transaction signature from wallet...");
-    //   // Sign the transaction
-    //   const signedTx = await wallet.signTransaction(transaction);
-
-    //   // Send and confirm the transaction
-    //   const signature = await provider.connection.sendRawTransaction(signedTx.serialize());
-    //   console.log(`Transaction submitted with signature: ${signature}. Confirming...`);
-
-    //   // Wait for confirmation using the newer approach
-    //   // const confirmation = await provider.connection.confirmTransaction(signature, 'confirmed');
-    //   const confirmation = await provider.connection.confirmTransaction({
-    //     signature,
-    //     blockhash: signedTx.recentBlockhash!,
-    //     lastValidBlockHeight: (await provider.connection.getLatestBlockhash()).lastValidBlockHeight
-    //   });
-    //   if (confirmation.value.err) {
-    //     throw new Error('Transaction failed to confirm');
-    //   }
-
-    //   console.log("Transaction confirmed:", signature);
-    //   alert(`Intent submitted successfully! Tx: ${signature}`);
-    //   // setSellAmount('');
-    //   // setBuyAmount('');
-
-    // } catch (error: any) {
-    //   console.error("Error submitting intent:", error);
-    //   let errorMsg = "Error submitting intent.";
-    //   if (error instanceof Error) {
-    //     errorMsg += ` ${error.message}`;
-    //     if ('logs' in error && error.logs) {
-    //       console.error("Transaction Logs:", error.logs);
-    //       // errorMsg += ` Logs: ${error.logs.join('\n')}`;
-    //     }
-    //   } else if (typeof error === 'string') {
-    //     errorMsg += ` ${error}`;
-    //   }
-    //   setError(errorMsg);
-    //   alert(errorMsg);
-    // } finally {
-    //   setIsLoading(false);
-    // }
-  }, [publicKey, wallet, program, provider, fromToken, toToken, sellAmount]); // Add dependencies
+  }, [publicKey, wallet, provider, fromToken, toToken, sellAmount]); // Add dependencies
 
   // Determine Button State
   const getButtonState = () => {
