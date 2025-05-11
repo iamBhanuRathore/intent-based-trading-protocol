@@ -150,12 +150,26 @@
   .swap-tab-inactive {
     @apply text-zinc-400 hover:text-white hover:bg-secondary/50;
   }
+  .gradient-button {
+    @apply bg-gradient-to-r from-green-400 to-cyan-400 text-black shadow-lg scale-105;
+  }
 }
 
 @layer utilities {
   .animate-in {
     animation-delay: 0ms;
     animation-fill-mode: both;
+  }
+    .remove-arrow::-webkit-inner-spin-button,
+    .remove-arrow::-webkit-outer-spin-button {
+      margin: 0;
+      -webkit-appearance: none;
+    }
+
+  .remove-arrow {
+    appearance: textfield;
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
   }
 
   .animate-out {

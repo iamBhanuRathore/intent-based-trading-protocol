@@ -1,0 +1,38 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "swap-hono",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-04-29",
+	"kv_namespaces": [
+		{
+			"binding": "swap_hono",
+			"id": "5b6a24cfb7de4434a77d9bd356f9994b",
+		},
+	],
+	"vars": {
+		"RPC_URL": "https://solana-mainnet.g.alchemy.com/v2/W62oNPCL2C6RdW_irgCclAQu_QTllslz",
+	},
+	// "compatibility_flags": [
+	//   "nodejs_compat"
+	// ],
+	// "r2_buckets": [
+	//   {
+	//     "binding": "MY_BUCKET",
+	//     "bucket_name": "my-bucket"
+	//   }
+	// ],
+	// "d1_databases": [
+	//   {
+	//     "binding": "MY_DB",
+	//     "database_name": "my-database",
+	//     "database_id": ""
+	//   }
+	// ],
+	// "ai": {
+	//   "binding": "AI"
+	// },
+	// "observability": {
+	//   "enabled": true,
+	//   "head_sampling_rate": 1
+	// }
+}

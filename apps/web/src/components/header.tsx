@@ -1,19 +1,19 @@
 
 "use client";
-import React, { useState } from "react";
+// import React, { useState } from "react";
 import { Search, Menu } from "lucide-react";
 import Logo from "./logo";
 import { cn } from "@/lib/utils";
 import { Button } from "@repo/ui/components/ui/button";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import ClientOnly from "./client-only";
+// import ClientOnly from "./client-only";
 
 interface HeaderProps {
   className?: string;
 };
 
 const Header: React.FC<HeaderProps> = ({ className }) => {
-  const [activeTab, setActiveTab] = useState("trade");
+  // const [activeTab, setActiveTab] = useState("trade");
 
 
 
@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       <div className="flex items-center space-x-6">
         <Logo />
 
-        <nav className="hidden md:flex items-center space-x-1">
+        {/* <nav className="hidden md:flex items-center space-x-1">
           <button
             className={cn(
               "nav-item",
@@ -55,11 +55,11 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
           >
             Pool
           </button>
-        </nav>
+        </nav> */}
       </div>
 
       <div className="flex items-center space-x-3">
-        <div className="relative hidden md:flex items-center">
+        {/* <div className="relative hidden md:flex items-center">
           <Search className="absolute left-3 text-zinc-400 h-4 w-4" />
           <input
             type="text"
@@ -67,7 +67,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
             className="h-10 pl-9 pr-4 bg-secondary/30 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500 w-[300px]"
           />
           <span className="absolute right-3 text-zinc-400 text-xs">/</span>
-        </div>
+        </div> */}
         {/* <ClientOnly> */}
         <div suppressHydrationWarning={true}>
           <WalletMultiButton />
